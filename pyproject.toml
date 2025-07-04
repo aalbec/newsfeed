@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "IT-newsfeed"
+version = "0.1.0"
+description = "Real-time IT newsfeed system"
+requires-python = ">=3.12"
+
+dependencies = [
+    "fastapi>=0.104.0",             # Web framework for APIs
+    "uvicorn[standard]>=0.24.0",    # ASGI server (Asynchronous Server Gateway Interface)
+    "pydantic>=2.0",                # Data validation
+    "sentence-transformers>=2.2.0", # AI/ML for filtering
+    "feedparser>=6.0.0",            # RSS feeds
+    "praw>=7.7.0",                  # Reddit API
+    "httpx>=0.25.0",                # HTTP client
+    "streamlit>=1.28.0",            # UI dashboard
+    "loguru>=0.7.0",                # Structured logging
+    "pytest>=7.4.0",                # Testing
+    "pytest-cov>=4.1.0",            # Coverage reporting
+]
+
+# Package discovery configuration
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Package directory mapping
+[tool.setuptools.package-dir]
+"" = "src"
