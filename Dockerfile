@@ -10,10 +10,13 @@ RUN pip install --upgrade pip
 # Copy only pyproject.toml first (for better caching)
 COPY pyproject.toml ./
 
+# Copy src directory (needed for pip install -e .)
+COPY src/ ./src/
+
 # Install Python dependencies
 RUN pip install --no-cache-dir -e .
 
-# Copy project files
+# Copy remaining project files
 COPY . .
 
 # Expose FastAPI default port
