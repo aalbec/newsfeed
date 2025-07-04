@@ -3,6 +3,8 @@ materials/
 
 # IDE and virtual environment
 .vscode/
+.idea/
+*.iml
 venv/
 
 # Python package metadata
@@ -18,3 +20,13 @@ __pycache__/
 *.pyd
 .coverage
 *.cover
+
+# Testing and development
+.pytest_cache/
+.mypy_cache/
+*.log
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
