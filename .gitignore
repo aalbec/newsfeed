@@ -10,3 +10,11 @@ venv/
 
 # macOS system files
 .DS_Store
+
+# Python cache and coverage
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.coverage
+*.cover
