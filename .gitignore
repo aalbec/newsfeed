@@ -1,3 +1,12 @@
 # Materials - do not commit
 materials/
+
+# IDE and virtual environment
+.vscode/
+venv/
+
+# Python package metadata
+*.egg-info/
+
+# macOS system files
 .DS_Store
