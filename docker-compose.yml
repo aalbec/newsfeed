@@ -1,0 +1,10 @@
+services:
+  app:
+    build: .
+    container_name: newsfeed_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
