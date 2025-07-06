@@ -1,6 +1,7 @@
 """Unit tests for the NewsItem model (essentials only).
 
-TODO: Add more edge case and normalization tests for NewsItem in future iterations.
+TODO: Add more edge case and normalization tests for NewsItem in future
+iterations.
 """
 
 from datetime import datetime, timezone
@@ -21,7 +22,7 @@ class TestNewsItem:
             title="Test Security Vulnerability",
             body="This is a test security issue",
             published_at=now,
-            version=1
+            version=1,
         )
         assert news_item.id == "test_001"
         assert news_item.source == "reddit"
@@ -45,32 +46,14 @@ class TestNewsItem:
                 source="reddit",
                 title="Test",
                 body="",
-                published_at=datetime.now()  # naive
+                published_at=datetime.now(),  # naive
             )
         with pytest.raises(ValidationError):
-            NewsItem(
-                id="",
-                source="reddit",
-                title="Test",
-                body="",
-                published_at=now
-            )
+            NewsItem(id="", source="reddit", title="Test", body="", published_at=now)
         with pytest.raises(ValidationError):
-            NewsItem(
-                id="test",
-                source="",
-                title="Test",
-                body="",
-                published_at=now
-            )
+            NewsItem(id="test", source="", title="Test", body="", published_at=now)
         with pytest.raises(ValidationError):
-            NewsItem(
-                id="test",
-                source="reddit",
-                title="",
-                body="",
-                published_at=now
-            )
+            NewsItem(id="test", source="reddit", title="", body="", published_at=now)
 
     def test_json_contract_compliance(self):
         """Test JSON serialization produces assignment-compliant format."""
@@ -81,7 +64,7 @@ class TestNewsItem:
             title="Test Serialization",
             body="Test body content",
             published_at=now,
-            version=2
+            version=2,
         )
         expected = {
             "id": "test_009",
@@ -89,7 +72,7 @@ class TestNewsItem:
             "title": "Test Serialization",
             "body": "Test body content",
             "published_at": "2024-12-10T15:30:00+00:00Z",
-            "version": 2
+            "version": 2,
         }
         actual = news_item.model_dump(mode="json")
         assert actual == expected

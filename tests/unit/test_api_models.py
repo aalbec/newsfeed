@@ -21,7 +21,7 @@ class TestIngestRequest:
             source="reddit",
             title="Test News",
             body="Test body",
-            published_at=now
+            published_at=now,
         )
 
         # Act
@@ -40,13 +40,15 @@ class TestIngestRequest:
             id="test_001",
             source="reddit",
             title="First News",
-            published_at=now
+            body="Test body",  # Include body to test with content
+            published_at=now,
         )
         item2 = NewsItem(
             id="test_002",
             source="rss",
             title="Second News",
-            published_at=now
+            # body omitted - test optional field behavior
+            published_at=now,
         )
 
         # Act
@@ -74,7 +76,7 @@ class TestIngestRequest:
             source="reddit",
             title="Test News",
             body="Test body",
-            published_at=now
+            published_at=now,
         )
         request = IngestRequest(items=[news_item])
 
@@ -99,7 +101,7 @@ class TestRetrieveResponse:
             source="reddit",
             title="Test News",
             body="Test body",
-            published_at=now
+            published_at=now,
         )
 
         # Act
@@ -127,13 +129,15 @@ class TestRetrieveResponse:
             id="test_001",
             source="reddit",
             title="First News",
-            published_at=now
+            # body omitted - test optional field behavior
+            published_at=now,
         )
         item2 = NewsItem(
             id="test_002",
             source="rss",
             title="Second News",
-            published_at=now
+            body="Second News body",
+            published_at=now,
         )
 
         # Act
@@ -154,7 +158,7 @@ class TestRetrieveResponse:
             source="reddit",
             title="Test News",
             body="Test body",
-            published_at=now
+            published_at=now,
         )
         response = RetrieveResponse(items=[news_item], total=1)
 
@@ -179,24 +183,24 @@ class TestAssignmentCompliance:
             source="mock",
             title="Contract Test",
             body="Test body",
-            published_at=now
+            published_at=now,
         )
 
         # Act
         request = IngestRequest(items=[news_item])
 
         # Assert - Check structure matches assignment
-        assert hasattr(request, 'items')
+        assert hasattr(request, "items")
         assert isinstance(request.items, list)
         assert len(request.items) > 0
 
         # Check that items contain required fields
         item = request.items[0]
-        assert hasattr(item, 'id')
-        assert hasattr(item, 'source')
-        assert hasattr(item, 'title')
-        assert hasattr(item, 'body')
-        assert hasattr(item, 'published_at')
+        assert hasattr(item, "id")
+        assert hasattr(item, "source")
+        assert hasattr(item, "title")
+        assert hasattr(item, "body")
+        assert hasattr(item, "published_at")
 
     def test_retrieve_response_contract(self):
         """Test that RetrieveResponse matches assignment contract."""
@@ -207,22 +211,22 @@ class TestAssignmentCompliance:
             source="mock",
             title="Contract Test",
             body="Test body",
-            published_at=now
+            published_at=now,
         )
 
         # Act
         response = RetrieveResponse(items=[news_item], total=1)
 
         # Assert - Check structure matches assignment
-        assert hasattr(response, 'items')
+        assert hasattr(response, "items")
         assert isinstance(response.items, list)
-        assert hasattr(response, 'total')
+        assert hasattr(response, "total")
         assert isinstance(response.total, int)
 
         # Check that items contain required fields
         item = response.items[0]
-        assert hasattr(item, 'id')
-        assert hasattr(item, 'source')
-        assert hasattr(item, 'title')
-        assert hasattr(item, 'body')
-        assert hasattr(item, 'published_at')
+        assert hasattr(item, "id")
+        assert hasattr(item, "source")
+        assert hasattr(item, "title")
+        assert hasattr(item, "body")
+        assert hasattr(item, "published_at")
