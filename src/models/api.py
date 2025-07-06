@@ -20,15 +20,10 @@ class IngestRequest(BaseModel):
                     {
                         "id": "news_001",
                         "source": "reddit",
-                        "title": (
-                            "Critical Security Vulnerability in Apache Log4j"
-                        ),
-                        "body": (
-                            "A zero-day vulnerability has been "
-                            "discovered..."
-                        ),
+                        "title": ("Critical Security Vulnerability in Apache Log4j"),
+                        "body": ("A zero-day vulnerability has been " "discovered..."),
                         "published_at": "2024-12-10T15:30:00Z",
-                        "version": 1
+                        "version": 1,
                     }
                 ]
             }
@@ -36,9 +31,7 @@ class IngestRequest(BaseModel):
     )
 
     items: List[NewsItem] = Field(
-        ...,
-        description="Array of news items to ingest",
-        min_length=1
+        ..., description="Array of news items to ingest", min_length=1
     )
 
 
@@ -55,27 +48,19 @@ class RetrieveResponse(BaseModel):
                     {
                         "id": "news_001",
                         "source": "reddit",
-                        "title": (
-                            "Critical Security Vulnerability in Apache Log4j"
-                        ),
-                        "body": (
-                            "A zero-day vulnerability has been "
-                            "discovered..."
-                        ),
+                        "title": ("Critical Security Vulnerability in Apache Log4j"),
+                        "body": ("A zero-day vulnerability has been " "discovered..."),
                         "published_at": "2024-12-10T15:30:00Z",
-                        "version": 1
+                        "version": 1,
                     }
                 ],
-                "total": 1
+                "total": 1,
             }
         }
     )
 
     items: List[NewsItem] = Field(
         default_factory=list,
-        description="Filtered news items sorted by relevance and recency"
+        description="Filtered news items sorted by relevance and recency",
     )
-    total: int = Field(
-        default=0,
-        description="Total number of items returned"
-    )
+    total: int = Field(default=0, description="Total number of items returned")
