@@ -18,7 +18,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.coverage
+.coverage*
 *.cover
 
 # Testing and development
