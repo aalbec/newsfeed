@@ -1,8 +1,7 @@
 """News filtering package for AI-enhanced content relevance."""
 
-from src.registry import FilteredItem, NewsFilter
+from src.registry.interfaces import FilteredItem, NewsFilter
 
 from .filter_orchestration import FilterOrchestration
 
-__all__ = ["FilteredItem", "NewsFilter", "FilterOrchestration"]
 __all__ = ["FilteredItem", "NewsFilter", "FilterOrchestration"]
