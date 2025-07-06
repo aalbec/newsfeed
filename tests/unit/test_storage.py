@@ -1,6 +1,6 @@
 """Unit tests for the storage implementations."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 import pytest_asyncio
@@ -86,7 +86,7 @@ class TestInMemoryStore:
                 source="rss",
                 title="Newer Item",
                 body="Newer item body",
-                published_at=now.replace(second=now.second + 1),
+                published_at=now + timedelta(seconds=1),
             ),
         ]
 
