@@ -1,0 +1,5 @@
+# Flake8 configuration for Black compatibility
+# This file ensures flake8 uses the same line length and ignores as Black
+[flake8]
+max-line-length = 88
+extend-ignore = E203,W503
