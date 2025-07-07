@@ -444,3 +444,8 @@ async def health_check() -> HealthResponse:
 # Include routers
 app.include_router(ingest.router, prefix="/api/v1", tags=["Ingest"])
 app.include_router(retrieve.router, prefix="/api/v1", tags=["Retrieve"])
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

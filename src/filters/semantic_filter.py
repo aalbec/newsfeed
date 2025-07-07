@@ -1,6 +1,6 @@
 """Semantic filter using sentence embeddings for relevance scoring."""
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 from loguru import logger
@@ -20,8 +20,12 @@ class SemanticFilter(NewsFilter):
     Uses sentence-transformers with all-MiniLM-L6-v2 for semantic understanding.
     """
 
-    def __init__(self):
-        """Initialize the semantic filter with sentence embeddings."""
+    def __init__(self, model: Optional[SentenceTransformer] = None):
+        """Initialize the semantic filter with sentence embeddings.
+
+        Args:
+            model: Optional pre-loaded SentenceTransformer model for testing
+        """
         # IT-relevant topic phrases for semantic matching
         self.it_topics = [
             "system administration",
@@ -38,9 +42,14 @@ class SemanticFilter(NewsFilter):
 
         # Initialize sentence transformer model
         # Using all-MiniLM-L6-v2 for optimal balance of speed and accuracy
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        if model is not None:
+            self.model = model
+            logger.info("Semantic filter initialized with provided model")
+        else:
+            self.model = SentenceTransformer('all-MiniLM-L6-v2')
+            logger.info("Semantic filter initialized with sentence-transformers")
+
         self.topic_embeddings = self.model.encode(self.it_topics)
-        logger.info("Semantic filter initialized with sentence-transformers")
 
     @property
     def name(self) -> str:
@@ -97,11 +106,12 @@ class SemanticFilter(NewsFilter):
         # Calculate overall semantic score (maximum similarity)
         if topic_scores:
             max_similarity = max(topic_scores.values())
-            topic_scores["overall_semantic"] = max_similarity
+            topic_scores["overall_semantic"] = float(max_similarity)
         else:
             topic_scores["overall_semantic"] = 0.0
 
-        return topic_scores
+        # Ensure all values are Python floats for Pydantic serialization
+        return {k: float(v) for k, v in topic_scores.items()}
 
     def _calculate_similarity(self, text: str, topic_index: int) -> float:
         """Calculate semantic similarity between text and topic.
@@ -142,4 +152,5 @@ class SemanticFilter(NewsFilter):
         if norm1 == 0 or norm2 == 0:
             return 0.0
 
-        return dot_product / (norm1 * norm2)
+        # Convert numpy.float32 to Python float for Pydantic serialization
+        return float(dot_product / (norm1 * norm2))
