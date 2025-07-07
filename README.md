@@ -33,7 +33,8 @@ This system aggregates IT-related news from RSS feeds, Reddit, and mock APIs, fi
 ### AI/ML
 - **sentence-transformers** - Text embeddings for semantic filtering
 - **all-MiniLM-L6-v2** - Pre-trained model for IT topic similarity
-- **Hybrid Scoring** - Semantic + keyword + recency ranking
+- **Highest-Signal Scoring** - Final score is the MAX of all filter scores
+- **Recency-Based Sorting** - Results are sorted by relevance, then by date
 
 ### Data Sources
 - **feedparser** - RSS feed parsing (Tom's Hardware, Ars Technica)
@@ -226,6 +227,7 @@ newsfeed/
 │   ├── filtering/        # Content filtering orchestration
 │   ├── filters/          # Individual filter implementations
 │   ├── sources/          # Data source implementations
+│   ├── ingestion/        # Background data ingestion service
 │   └── ui/               # Streamlit dashboard UI
 ├── tests/                # Comprehensive test suite
 │   ├── unit/             # Unit tests for components
@@ -236,5 +238,3 @@ newsfeed/
 ├── Makefile              # Development workflow commands
 └── README.md             # This file
 ```
-
-
