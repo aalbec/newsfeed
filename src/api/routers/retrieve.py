@@ -17,7 +17,7 @@ from src.registry import FilterRegistry
 from src.storage import NewsStore
 
 # Configuration constants
-RELEVANCE_THRESHOLD = float(os.getenv("RELEVANCE_THRESHOLD", "0.3"))
+RELEVANCE_THRESHOLD = float(os.getenv("RELEVANCE_THRESHOLD", "0.1"))
 
 
 def get_storage(request: Request) -> NewsStore:
