@@ -17,13 +17,15 @@ API_BASE_URL = "http://localhost:8000"
 RETRIEVE_ENDPOINT = f"{API_BASE_URL}/api/v1/retrieve"
 HEALTH_ENDPOINT = f"{API_BASE_URL}/health"
 
-def check_api_health() -> bool:
-    """Check if the API is running and healthy."""
+def check_api_health() -> tuple[bool, dict]:
+    """Check if the API is running and healthy, and return its health data."""
     try:
         response = requests.get(HEALTH_ENDPOINT, timeout=15)
-        return response.status_code == 200
+        if response.status_code == 200:
+            return True, response.json()
+        return False, {}
     except requests.RequestException:
-        return False
+        return False, {}
 
 
 def fetch_news_items() -> List[Dict[str, Any]]:
@@ -83,11 +85,15 @@ def display_news_item(item: Dict[str, Any]):
             st.markdown(f"**Summary:** {item.get('body', '')}")
 
         # Relevance breakdown (if available)
-        if 'relevance_breakdown' in item:
-            breakdown = item['relevance_breakdown']
-            st.markdown("**Relevance Breakdown:**")
-            for factor, score in breakdown.items():
-                st.markdown(f"- {factor}: {score:.3f}")
+        if 'score_breakdown' in item:
+            with st.expander("See relevance breakdown"):
+                breakdown = item['score_breakdown']
+                st.markdown("**Relevance Breakdown:**")
+                if isinstance(breakdown, dict):
+                    for factor, score in breakdown.items():
+                        st.markdown(f"- **{factor.title()}**: `{score:.3f}`")
+                else:
+                    st.markdown(str(breakdown))
 
 def main():
     """Main dashboard function."""
@@ -113,7 +119,8 @@ def main():
 
         # API status
         st.header("System Status")
-        if check_api_health():
+        is_healthy, health_data = check_api_health()
+        if is_healthy:
             st.success("✅ API Healthy")
         else:
             st.error("❌ API Unavailable")
@@ -128,13 +135,29 @@ def main():
         - 🔴 High (>0.7): Critical IT issues
         - 🟡 Medium (0.4-0.7): Important updates
         - 🟢 Low (<0.4): General tech news
-
-        **Sources:** RSS feeds from Tom's Hardware and Ars Technica
         """)
 
+        # Display sources dynamically
+        if is_healthy and health_data:
+            sources = (
+                health_data.get("dependencies", {})
+                .get("sources", {})
+                .get("registered", [])
+            )
+            if sources:
+                st.markdown("**Active Sources:**")
+                for source in sources:
+                    st.markdown(f"- {source.replace('_', ' ').title()}")
+            else:
+                st.markdown("**No active sources found.**")
+
     # Main content area
-    if not check_api_health():
-        st.error("⚠️ Cannot connect to the API. Please ensure the newsfeed system is running.")
+    is_healthy, _ = check_api_health()
+    if not is_healthy:
+        st.error(
+            "⚠️ Cannot connect to the API. "
+            "Please ensure the newsfeed system is running."
+        )
         st.info("Start the API with: `python -m src.api.main`")
         return
 
@@ -143,7 +166,10 @@ def main():
         news_items = fetch_news_items()
 
     if not news_items:
-        st.info("📭 No news items available. The system may be filtering out all current items.")
+        st.info(
+            "📭 No news items available. "
+            "The system may be filtering out all current items."
+        )
         st.info("Try ingesting some test data via the API to see results.")
         return
 
@@ -156,7 +182,9 @@ def main():
 
     # Footer
     st.markdown("---")
-    st.markdown("*Last updated: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "*")
+    st.markdown(
+        f"*Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*"
+    )
 
     # Auto-refresh logic
     if auto_refresh:

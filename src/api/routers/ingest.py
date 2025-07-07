@@ -56,7 +56,7 @@ async def filter_item(item, filter_registry: FilterRegistry) -> Tuple[float, str
     logger.debug(
         f"Applying {len(filter_names)} filters with threshold: {RELEVANCE_THRESHOLD}"
     )
-    total_score = 0.0
+    scores = []
     reasons = []
     for filter_name in filter_names:
         filter_instance = filter_registry.get_filter(filter_name)
@@ -65,7 +65,8 @@ async def filter_item(item, filter_registry: FilterRegistry) -> Tuple[float, str
                 filtered_items = await filter_instance.filter([item])
                 if filtered_items:
                     filtered_item = filtered_items[0]
-                    total_score += filtered_item.relevance_score
+                    # The filters now return clean numerical scores directly
+                    scores.append(filtered_item.relevance_score)
                     breakdown = filtered_item.score_breakdown
                     if breakdown:
                         reasons.append(f"{filter_name}: {breakdown}")
@@ -73,7 +74,8 @@ async def filter_item(item, filter_registry: FilterRegistry) -> Tuple[float, str
                 logger.error(
                     f"Filter {filter_name} failed for item {item.id}: {e}"
                 )
-    filter_score = total_score / len(filter_names) if filter_names else 0.0
+    # Take the highest score from all filters (highest signal wins)
+    filter_score = max(scores) if scores else 0.0
     filter_reason = "; ".join(reasons) if reasons else "No specific reason"
     is_relevant = filter_score >= RELEVANCE_THRESHOLD
     return filter_score, filter_reason, is_relevant

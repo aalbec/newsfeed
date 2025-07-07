@@ -53,7 +53,7 @@ async def retrieve_and_filter_items(storage: NewsStore, filter_registry: FilterR
 
         # Apply each filter and collect scores
         for item in all_items:
-            total_score = 0.0
+            scores = []
             reasons = []
 
             for filter_name in filter_names:
@@ -63,22 +63,23 @@ async def retrieve_and_filter_items(storage: NewsStore, filter_registry: FilterR
                         filtered_items = await filter_instance.filter([item])
                         if filtered_items:
                             filtered_item = filtered_items[0]
-                            total_score += filtered_item.relevance_score
+                            # The filters now return clean numerical scores directly
+                            scores.append(filtered_item.relevance_score)
                             breakdown = filtered_item.score_breakdown
                             if breakdown:
                                 reasons.append(f"{filter_name}: {breakdown}")
                     except Exception as e:
                         logger.error(f"Filter {filter_name} failed for item {item.id}: {e}")
 
-            # Calculate average score
-            avg_score = total_score / len(filter_names) if filter_names else 0.0
-            item.relevance_score = avg_score
+            # Take the highest score from all filters (highest signal wins)
+            item.relevance_score = max(scores) if scores else 0.0
             item.score_breakdown = "; ".join(reasons) if reasons else "No specific reason"
 
         # Filter by relevance threshold and sort by score (highest first)
         relevant_items = [
             item for item in all_items
-            if item.relevance_score >= RELEVANCE_THRESHOLD
+            if hasattr(item, 'relevance_score') and item.relevance_score is not None
+            and item.relevance_score >= RELEVANCE_THRESHOLD
         ]
 
         # Sort by relevance score (descending), then by published_at (newest first)

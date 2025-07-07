@@ -66,9 +66,11 @@ class KeywordFilter(NewsFilter):
 
         for item in items:
             score_breakdown = await self.get_score_breakdown(item)
+            # The relevance score is the highest score from any category,
+            # not the average. This ensures that a high-priority keyword
+            # hit is not diluted by zero scores in other categories.
             relevance_score = (
-                sum(score_breakdown.values()) / len(score_breakdown)
-                if score_breakdown else 0.0
+                max(score_breakdown.values()) if score_breakdown else 0.0
             )
 
             filtered_item = FilteredItem(

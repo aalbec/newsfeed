@@ -69,10 +69,7 @@ class SemanticFilter(NewsFilter):
 
         for item in items:
             score_breakdown = await self.get_score_breakdown(item)
-            relevance_score = (
-                sum(score_breakdown.values()) / len(score_breakdown)
-                if score_breakdown else 0.0
-            )
+            relevance_score = score_breakdown.get("overall_semantic", 0.0)
 
             filtered_item = FilteredItem(
                 item=item,
