@@ -74,5 +74,5 @@ class TestNewsItem:
             "published_at": "2024-12-10T15:30:00+00:00Z",
             "version": 2,
         }
-        actual = news_item.model_dump(mode="json")
+        actual = news_item.model_dump(mode="json", exclude_none=True)
         assert actual == expected

@@ -1,12 +1,11 @@
 """Integration tests for the complete filtering pipeline."""
 
 import pytest
-import pytest_asyncio
 
 from src.filtering import FilterOrchestration
 from src.filters import KeywordFilter, SemanticFilter
 from src.registry import FilterRegistry, SourceRegistry
-from src.sources import MockNewsSource, RSSSource
+from src.sources import MockNewsSource
 from src.storage import InMemoryStore
 
 
@@ -21,11 +20,11 @@ class TestFilteringPipeline:
         return registry
 
     @pytest.fixture
-    def filter_registry(self):
-        """Create filter registry with test filters."""
+    def filter_registry(self, cached_semantic_model):
+        """Create filter registry with test filters using cached model."""
         registry = FilterRegistry()
         registry.register(KeywordFilter())
-        registry.register(SemanticFilter())
+        registry.register(SemanticFilter(model=cached_semantic_model))
         return registry
 
     @pytest.fixture
@@ -39,28 +38,10 @@ class TestFilteringPipeline:
         weights = {"keyword": 0.6, "semantic": 0.4}
         return FilterOrchestration(filter_registry, weights)
 
-    @pytest_asyncio.fixture
-    async def real_rss_data(self):
-        """Fetch real RSS data from both sources for testing."""
-        # Fetch from both RSS sources
-        toms_hardware = RSSSource(
-            "tomshardware",
-            "https://www.tomshardware.com/feeds/all",
-            max_items=5
-        )
-        ars_technica = RSSSource(
-            "arstechnica",
-            "https://feeds.arstechnica.com/arstechnica/index",
-            max_items=5
-        )
-
-        # Get items from both sources
-        toms_items = await toms_hardware.fetch_items()
-        ars_items = await ars_technica.fetch_items()
-
-        # Combine and return real data
-        all_items = toms_items + ars_items
-        return all_items
+    @pytest.fixture
+    def real_rss_data(self, cached_rss_data):
+        """Use cached RSS data for testing to avoid repeated network requests."""
+        return cached_rss_data
 
     @pytest.mark.asyncio
     async def test_full_filtering_pipeline(
@@ -198,7 +179,6 @@ class TestFilteringPipeline:
         filtered_items = await orchestration.apply_filters(all_items)
 
         assert len(filtered_items) == len(all_items), "Should still process all items"
-
         assert all(
             item.relevance_score == 0.5 for item in filtered_items
         ), "Should use default scores"
@@ -210,6 +190,9 @@ class TestFilteringPipeline:
 
         assert len(filtered_items) == 0, "Should return empty list for empty input"
 
-    # TODO: Add these tests post-MVP for enhanced coverage and robustness:
-    # - test_filtering_with_real_data (variant/edge case for real data)
-    # - test_weighted_scoring_with_real_data (verifies weight config flexibility)
+# TODO: Additional tests for future phases:
+# - test_filtering_with_real_rss_data - Test with actual RSS feeds
+# - test_score_breakdown_explainability - Test detailed score breakdown
+# - test_deterministic_filtering - Test deterministic results
+# - test_filtering_performance - Test performance with large datasets
+# - test_advanced_orchestration - Test complex filter combinations
