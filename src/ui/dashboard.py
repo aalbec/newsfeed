@@ -20,7 +20,7 @@ HEALTH_ENDPOINT = f"{API_BASE_URL}/health"
 def check_api_health() -> bool:
     """Check if the API is running and healthy."""
     try:
-        response = requests.get(HEALTH_ENDPOINT, timeout=5)
+        response = requests.get(HEALTH_ENDPOINT, timeout=15)
         return response.status_code == 200
     except requests.RequestException:
         return False
@@ -29,7 +29,7 @@ def check_api_health() -> bool:
 def fetch_news_items() -> List[Dict[str, Any]]:
     """Fetch news items from the API."""
     try:
-        response = requests.get(RETRIEVE_ENDPOINT, timeout=10)
+        response = requests.get(RETRIEVE_ENDPOINT, timeout=30)
         if response.status_code == 200:
             data = response.json()
             # API returns {"items": [...]} structure
