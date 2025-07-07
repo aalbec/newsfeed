@@ -24,9 +24,7 @@ class FilterOrchestration:
     """
 
     def __init__(
-        self,
-        registry: FilterRegistry,
-        weights: Dict[str, float] | None = None
+        self, registry: FilterRegistry, weights: Dict[str, float] | None = None
     ):
         """Initialize the filter orchestration.
 
@@ -70,8 +68,7 @@ class FilterOrchestration:
 
         # Get filters from registry
         filter_names = (
-            list(self.weights.keys()) if self.weights
-            else self.registry.list_filters()
+            list(self.weights.keys()) if self.weights else self.registry.list_filters()
         )
         filters = self.registry.get_filters(filter_names)
 
@@ -83,7 +80,7 @@ class FilterOrchestration:
                 FilteredItem(
                     item=item,
                     relevance_score=0.5,  # Default neutral score
-                    score_breakdown={"default": 0.5}
+                    score_breakdown={"default": 0.5},
                 )
                 for item in items
             ]
@@ -111,9 +108,7 @@ class FilterOrchestration:
         return combined_items
 
     def _combine_scores(
-        self,
-        items: List[NewsItem],
-        filter_results: Dict[str, List[FilteredItem]]
+        self, items: List[NewsItem], filter_results: Dict[str, List[FilteredItem]]
     ) -> List[FilteredItem]:
         """Combine scores from multiple filters.
 
@@ -136,9 +131,12 @@ class FilterOrchestration:
                 if filter_name in filter_results:
                     # Find this item's score from this filter
                     filter_result = next(
-                        (fr for fr in filter_results[filter_name]
-                         if fr.item.id == item.id),
-                        None
+                        (
+                            fr
+                            for fr in filter_results[filter_name]
+                            if fr.item.id == item.id
+                        ),
+                        None,
                     )
 
                     if filter_result:
@@ -164,9 +162,7 @@ class FilterOrchestration:
 
             # Create combined filtered item
             combined_item = FilteredItem(
-                item=item,
-                relevance_score=final_score,
-                score_breakdown=score_breakdown
+                item=item, relevance_score=final_score, score_breakdown=score_breakdown
             )
             combined_items.append(combined_item)
 
@@ -182,8 +178,7 @@ class FilterOrchestration:
             Dictionary of score components from each filter
         """
         filter_names = (
-            list(self.weights.keys()) if self.weights
-            else self.registry.list_filters()
+            list(self.weights.keys()) if self.weights else self.registry.list_filters()
         )
         filters = self.registry.get_filters(filter_names)
 

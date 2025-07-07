@@ -60,7 +60,7 @@ class RSSSource(NewsSource):
                 return []
 
             items = []
-            for i, entry in enumerate(feed.entries[:self._max_items]):
+            for i, entry in enumerate(feed.entries[: self._max_items]):
                 try:
                     item = self._parse_entry(entry)
                     if item:
@@ -86,7 +86,7 @@ class RSSSource(NewsSource):
             feed = feedparser.parse(self._feed_url)
 
             # Check for parsing errors
-            if hasattr(feed, 'bozo') and feed.bozo:
+            if hasattr(feed, "bozo") and feed.bozo:
                 logger.warning(f"RSS feed parsing warnings for {self._feed_url}")
 
             return feed
@@ -105,18 +105,18 @@ class RSSSource(NewsSource):
         """
         try:
             # Extract title
-            title = getattr(entry, 'title', '')
+            title = getattr(entry, "title", "")
             if not title:
                 logger.warning(f"RSS entry missing title: {entry}")
                 return None
 
             # Extract body/content
-            body = ''
-            if hasattr(entry, 'summary'):
+            body = ""
+            if hasattr(entry, "summary"):
                 body = entry.summary
-            elif hasattr(entry, 'description'):
+            elif hasattr(entry, "description"):
                 body = entry.description
-            elif hasattr(entry, 'content') and entry.content:
+            elif hasattr(entry, "content") and entry.content:
                 body = entry.content[0].value
 
             # Parse published date
@@ -149,13 +149,14 @@ class RSSSource(NewsSource):
         """
         try:
             # Try different date fields
-            if hasattr(entry, 'published_parsed') and entry.published_parsed:
+            if hasattr(entry, "published_parsed") and entry.published_parsed:
                 return datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-            elif hasattr(entry, 'updated_parsed') and entry.updated_parsed:
+            elif hasattr(entry, "updated_parsed") and entry.updated_parsed:
                 return datetime(*entry.updated_parsed[:6], tzinfo=timezone.utc)
-            elif hasattr(entry, 'published'):
+            elif hasattr(entry, "published"):
                 # Try to parse string date
                 from dateutil import parser
+
                 return parser.parse(entry.published).replace(tzinfo=timezone.utc)
         except Exception as e:
             logger.warning(f"Could not parse date from RSS entry: {e}")
@@ -173,23 +174,26 @@ class RSSSource(NewsSource):
             Unique string ID
         """
         # Try to use existing ID
-        if hasattr(entry, 'id') and entry.id:
+        if hasattr(entry, "id") and entry.id:
             return f"{self._name}_{entry.id}"
 
         # Use link as fallback
-        if hasattr(entry, 'link') and entry.link:
+        if hasattr(entry, "link") and entry.link:
             # Create hash from link
             import hashlib
+
             link_hash = hashlib.md5(entry.link.encode()).hexdigest()[:8]
             return f"{self._name}_{link_hash}"
 
         # Use title as last resort
-        if hasattr(entry, 'title') and entry.title:
+        if hasattr(entry, "title") and entry.title:
             import hashlib
+
             title_hash = hashlib.md5(entry.title.encode()).hexdigest()[:8]
             return f"{self._name}_{title_hash}"
 
         # Fallback to timestamp
         import time
+
         timestamp = int(time.time())
         return f"{self._name}_{timestamp}"

@@ -29,12 +29,9 @@ class MockNewsFilter(NewsFilter):
 
     async def filter(self, items):
         from src.registry import FilteredItem
+
         return [
-            FilteredItem(
-                item=item,
-                relevance_score=1.0,
-                score_breakdown={"mock": 1.0}
-            )
+            FilteredItem(item=item, relevance_score=1.0, score_breakdown={"mock": 1.0})
             for item in items
         ]
 

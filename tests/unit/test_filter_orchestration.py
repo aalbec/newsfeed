@@ -34,15 +34,13 @@ class TestFilterOrchestration:
             NewsItem(
                 id="test_001",
                 source="test",
-                title=(
-                    "Critical security vulnerability discovered"
-                ),
+                title=("Critical security vulnerability discovered"),
                 body=(
                     "A major security breach has been reported affecting "
                     "multiple systems."
                 ),
                 published_at=datetime.now(timezone.utc),
-                version=1
+                version=1,
             ),
             NewsItem(
                 id="test_002",
@@ -50,7 +48,7 @@ class TestFilterOrchestration:
                 title="New software update available",
                 body="Latest version includes performance improvements and bug fixes.",
                 published_at=datetime.now(timezone.utc),
-                version=1
+                version=1,
             ),
             NewsItem(
                 id="test_003",
@@ -58,8 +56,8 @@ class TestFilterOrchestration:
                 title="Weather forecast for tomorrow",
                 body="Sunny skies expected with temperatures in the mid-70s.",
                 published_at=datetime.now(timezone.utc),
-                version=1
-            )
+                version=1,
+            ),
         ]
 
     @pytest.mark.asyncio
@@ -112,7 +110,7 @@ class TestFilterOrchestration:
                 title="Test item",
                 body="Test content",
                 published_at=datetime.now(timezone.utc),
-                version=1
+                version=1,
             )
         ]
 
@@ -153,7 +151,7 @@ class TestFilterOrchestration:
                 title="Security vulnerability critical",
                 body="Major security issue discovered.",
                 published_at=datetime.now(timezone.utc),
-                version=1
+                version=1,
             )
         ]
 

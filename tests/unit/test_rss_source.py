@@ -32,7 +32,7 @@ class TestRSSSource:
         mock_feed.entries = [mock_entry]
         mock_feed.bozo = False
 
-        with patch('src.sources.rss_source.feedparser') as mock_feedparser:
+        with patch("src.sources.rss_source.feedparser") as mock_feedparser:
             mock_feedparser.parse.return_value = mock_feed
 
             source = RSSSource("test-rss", "https://example.com/feed.xml")
@@ -50,7 +50,7 @@ class TestRSSSource:
         mock_feed = MagicMock()
         mock_feed.entries = []
 
-        with patch('src.sources.rss_source.feedparser') as mock_feedparser:
+        with patch("src.sources.rss_source.feedparser") as mock_feedparser:
             mock_feedparser.parse.return_value = mock_feed
 
             source = RSSSource("test-rss", "https://example.com/feed.xml")
@@ -61,7 +61,7 @@ class TestRSSSource:
     @pytest.mark.asyncio
     async def test_fetch_items_parsing_error(self):
         """Test handling of RSS parsing errors."""
-        with patch('src.sources.rss_source.feedparser') as mock_feedparser:
+        with patch("src.sources.rss_source.feedparser") as mock_feedparser:
             mock_feedparser.parse.side_effect = Exception("Network error")
 
             source = RSSSource("test-rss", "https://example.com/feed.xml")
@@ -86,7 +86,7 @@ class TestRSSSource:
         mock_feed.entries = mock_entries
         mock_feed.bozo = False
 
-        with patch('src.sources.rss_source.feedparser') as mock_feedparser:
+        with patch("src.sources.rss_source.feedparser") as mock_feedparser:
             mock_feedparser.parse.return_value = mock_feed
 
             # Test with max_items=3
@@ -109,7 +109,7 @@ class TestRSSSource:
         mock_feed.entries = [mock_entry]
         mock_feed.bozo = False
 
-        with patch('src.sources.rss_source.feedparser') as mock_feedparser:
+        with patch("src.sources.rss_source.feedparser") as mock_feedparser:
             mock_feedparser.parse.return_value = mock_feed
 
             source = RSSSource("test-rss", "https://example.com/feed.xml")
@@ -131,7 +131,7 @@ class TestRSSSource:
         mock_feed.entries = [mock_entry]
         mock_feed.bozo = False
 
-        with patch('src.sources.rss_source.feedparser') as mock_feedparser:
+        with patch("src.sources.rss_source.feedparser") as mock_feedparser:
             mock_feedparser.parse.return_value = mock_feed
 
             source = RSSSource("test-rss", "https://example.com/feed.xml")

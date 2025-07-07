@@ -175,16 +175,17 @@ class BackgroundIngestionService:
                             if breakdown:
                                 reasons.append(f"{filter_name}: {breakdown}")
                     except Exception as e:
-                        logger.error(f"❌ Filter {filter_name} failed for item {item.id}: {e}")
+                        logger.error(
+                            f"❌ Filter {filter_name} failed for item {item.id}: {e}"
+                        )
 
             filter_score = total_score / len(filter_names) if filter_names else 0.0
             filter_reason = "; ".join(reasons) if reasons else "No specific reason"
 
             # Use same threshold as ingest endpoint
             import os
-            relevance_threshold = float(
-                os.getenv("RELEVANCE_THRESHOLD", "0.1")
-            )
+
+            relevance_threshold = float(os.getenv("RELEVANCE_THRESHOLD", "0.1"))
             is_relevant = filter_score >= relevance_threshold
 
             return filter_score, filter_reason, is_relevant
@@ -198,7 +199,7 @@ class BackgroundIngestionService:
         return {
             "running": self.running,
             "processed_items_count": len(self.processed_items),
-            "thread_alive": self.thread.is_alive() if self.thread else False
+            "thread_alive": self.thread.is_alive() if self.thread else False,
         }
 
 

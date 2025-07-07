@@ -24,28 +24,73 @@ class KeywordFilter(NewsFilter):
         """Initialize the keyword filter with IT-relevant keywords."""
         # High-priority keywords (security, outages, critical issues)
         self.high_priority_keywords = {
-            'security', 'vulnerability', 'breach', 'hack', 'cyber',
-            'outage', 'downtime', 'crash', 'failure', 'bug',
-            'cve', 'exploit', 'malware', 'ransomware', 'phishing',
-            'patch', 'update', 'fix', 'critical', 'urgent',
+            "security",
+            "vulnerability",
+            "breach",
+            "hack",
+            "cyber",
+            "outage",
+            "downtime",
+            "crash",
+            "failure",
+            "bug",
+            "cve",
+            "exploit",
+            "malware",
+            "ransomware",
+            "phishing",
+            "patch",
+            "update",
+            "fix",
+            "critical",
+            "urgent",
             # Vendor-specific critical terms (high impact)
-            'aws', 'amazon web services', 'azure', 'microsoft azure',
-            'gcp', 'google cloud', 'office 365', 'o365', 'github', 'zoom'
+            "aws",
+            "amazon web services",
+            "azure",
+            "microsoft azure",
+            "gcp",
+            "google cloud",
+            "office 365",
+            "o365",
+            "github",
+            "zoom",
         }
 
         # Medium-priority keywords (general IT topics)
         self.medium_priority_keywords = {
-            'update', 'upgrade', 'maintenance', 'performance',
-            'compatibility', 'integration', 'deployment',
-            'monitoring', 'backup', 'recovery', 'disaster',
-            'compliance', 'regulation', 'policy', 'governance'
+            "update",
+            "upgrade",
+            "maintenance",
+            "performance",
+            "compatibility",
+            "integration",
+            "deployment",
+            "monitoring",
+            "backup",
+            "recovery",
+            "disaster",
+            "compliance",
+            "regulation",
+            "policy",
+            "governance",
         }
 
         # Low-priority keywords (general tech)
         self.low_priority_keywords = {
-            'technology', 'software', 'hardware', 'cloud',
-            'data', 'network', 'server', 'database', 'api',
-            'development', 'testing', 'release', 'version'
+            "technology",
+            "software",
+            "hardware",
+            "cloud",
+            "data",
+            "network",
+            "server",
+            "database",
+            "api",
+            "development",
+            "testing",
+            "release",
+            "version",
         }
 
     @property
@@ -69,14 +114,12 @@ class KeywordFilter(NewsFilter):
             # The relevance score is the highest score from any category,
             # not the average. This ensures that a high-priority keyword
             # hit is not diluted by zero scores in other categories.
-            relevance_score = (
-                max(score_breakdown.values()) if score_breakdown else 0.0
-            )
+            relevance_score = max(score_breakdown.values()) if score_breakdown else 0.0
 
             filtered_item = FilteredItem(
                 item=item,
                 relevance_score=relevance_score,
-                score_breakdown=score_breakdown
+                score_breakdown=score_breakdown,
             )
             filtered_items.append(filtered_item)
 
@@ -108,7 +151,7 @@ class KeywordFilter(NewsFilter):
         breakdown = {
             "high_priority_keywords": high_score,
             "medium_priority_keywords": medium_score,
-            "low_priority_keywords": low_score
+            "low_priority_keywords": low_score,
         }
 
         return breakdown
@@ -126,7 +169,7 @@ class KeywordFilter(NewsFilter):
         count = 0
         for keyword in keywords:
             # Use word boundaries to avoid partial matches
-            pattern = r'\b' + re.escape(keyword) + r'\b'
+            pattern = r"\b" + re.escape(keyword) + r"\b"
             matches = re.findall(pattern, text)
             count += len(matches)
 

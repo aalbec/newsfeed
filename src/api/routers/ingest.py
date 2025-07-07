@@ -71,9 +71,7 @@ async def filter_item(item, filter_registry: FilterRegistry) -> Tuple[float, str
                     if breakdown:
                         reasons.append(f"{filter_name}: {breakdown}")
             except Exception as e:
-                logger.error(
-                    f"Filter {filter_name} failed for item {item.id}: {e}"
-                )
+                logger.error(f"Filter {filter_name} failed for item {item.id}: {e}")
     # Take the highest score from all filters (highest signal wins)
     filter_score = max(scores) if scores else 0.0
     filter_reason = "; ".join(reasons) if reasons else "No specific reason"
@@ -93,7 +91,7 @@ def summarize_results(results: List[Dict]) -> Dict:
         "accepted": 0,
         "rejected": 0,
         "duplicates": 0,
-        "errors": 0
+        "errors": 0,
     }
     for r in results:
         summary[r["result"]] += 1
@@ -112,15 +110,21 @@ async def process_item(item, storage, filter_registry) -> Dict:
         score, reason, is_relevant = await filter_item(item, filter_registry)
         if is_relevant:
             await store_item(item, storage)
-            logger.info(
-                f"✅ Item accepted: {item.id} (score: {score:.3f}) - {reason}"
-            )
-            return {"result": "accepted", "id": item.id, "score": score, "reason": reason}
+            logger.info(f"✅ Item accepted: {item.id} (score: {score:.3f}) - {reason}")
+            return {
+                "result": "accepted",
+                "id": item.id,
+                "score": score,
+                "reason": reason,
+            }
         else:
-            logger.info(
-                f"❌ Item rejected: {item.id} (score: {score:.3f}) - {reason}"
-            )
-            return {"result": "rejected", "id": item.id, "score": score, "reason": reason}
+            logger.info(f"❌ Item rejected: {item.id} (score: {score:.3f}) - {reason}")
+            return {
+                "result": "rejected",
+                "id": item.id,
+                "score": score,
+                "reason": reason,
+            }
     except Exception as e:
         logger.error(f"Error processing item {item.id}: {e}")
         return {"result": "errors", "id": item.id, "reason": str(e)}
@@ -140,19 +144,19 @@ router = APIRouter()
             "model": BadRequestErrorResponse,
             "description": (
                 "Bad request - no items provided or invalid request format"
-            )
+            ),
         },
         422: {
             "model": ValidationErrorResponse,
             "description": (
                 "Validation error - invalid item data or schema violations"
-            )
+            ),
         },
         500: {
             "model": InternalServerErrorResponse,
-            "description": "Internal server error during processing"
-        }
-    }
+            "description": "Internal server error during processing",
+        },
+    },
 )
 async def ingest_news(
     request_data: IngestRequest,
@@ -196,17 +200,12 @@ async def ingest_news(
         summary = IngestSummary(**summary_data)
         logger.info(f"📊 Ingest summary: {summary_data}")
         return IngestResponse(
-            status="ACK",
-            message="News items processed successfully",
-            summary=summary
+            status="ACK", message="News items processed successfully", summary=summary
         )
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(
-            f"Unexpected error during ingest: {e}"
-        )
+        logger.error(f"Unexpected error during ingest: {e}")
         raise HTTPException(
-            status_code=500,
-            detail="Internal server error during ingest processing"
+            status_code=500, detail="Internal server error during ingest processing"
         )

@@ -33,11 +33,11 @@ class TestRedditSource:
             os.environ,
             {
                 "REDDIT_CLIENT_ID": "test_client_id",
-                "REDDIT_CLIENT_SECRET": "test_client_secret"
-            }
+                "REDDIT_CLIENT_SECRET": "test_client_secret",
+            },
         ):
             with patch(
-                'src.sources.reddit_source.praw.Reddit', return_value=mock_reddit
+                "src.sources.reddit_source.praw.Reddit", return_value=mock_reddit
             ):
                 source = RedditSource()
                 assert source.reddit is not None
@@ -148,11 +148,11 @@ class TestCreateRedditSource:
             os.environ,
             {
                 "REDDIT_CLIENT_ID": "test_client_id",
-                "REDDIT_CLIENT_SECRET": "test_client_secret"
-            }
+                "REDDIT_CLIENT_SECRET": "test_client_secret",
+            },
         ):
             with patch(
-                'src.sources.reddit_source.praw.Reddit', return_value=mock_reddit
+                "src.sources.reddit_source.praw.Reddit", return_value=mock_reddit
             ):
                 source = create_reddit_source()
                 assert source is not None
@@ -168,11 +168,11 @@ class TestCreateRedditSource:
             os.environ,
             {
                 "REDDIT_CLIENT_ID": "test_client_id",
-                "REDDIT_CLIENT_SECRET": "test_client_secret"
-            }
+                "REDDIT_CLIENT_SECRET": "test_client_secret",
+            },
         ):
             with patch(
-                'src.sources.reddit_source.praw.Reddit', return_value=mock_reddit
+                "src.sources.reddit_source.praw.Reddit", return_value=mock_reddit
             ):
                 source = create_reddit_source(subreddit_name="networking", limit=5)
                 assert source is not None

@@ -41,7 +41,7 @@ class NewsItem(BaseModel):
                 "score_breakdown": (
                     "keyword: high_priority_keywords=0.8; "
                     "semantic: topic_cybersecurity_incident=0.9"
-                )
+                ),
             }
         }
     )

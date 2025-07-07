@@ -110,9 +110,10 @@ class MockNewsSource(NewsSource):
         ]
 
         # Generate items from mock data
-        for i, data in enumerate(mock_data[:self._item_count]):
+        for i, data in enumerate(mock_data[: self._item_count]):
             # Use timedelta to properly subtract hours
             from datetime import timedelta
+
             published_at = base_time - timedelta(hours=data["hours_ago"])
 
             item = NewsItem(

@@ -37,7 +37,7 @@ class SemanticFilter(NewsFilter):
             "IT infrastructure",
             "system maintenance",
             "performance monitoring",
-            "disaster recovery"
+            "disaster recovery",
         ]
 
         # Initialize sentence transformer model
@@ -46,7 +46,7 @@ class SemanticFilter(NewsFilter):
             self.model = model
             logger.info("Semantic filter initialized with provided model")
         else:
-            self.model = SentenceTransformer('all-MiniLM-L6-v2')
+            self.model = SentenceTransformer("all-MiniLM-L6-v2")
             logger.info("Semantic filter initialized with sentence-transformers")
 
         self.topic_embeddings = self.model.encode(self.it_topics)
@@ -74,7 +74,7 @@ class SemanticFilter(NewsFilter):
             filtered_item = FilteredItem(
                 item=item,
                 relevance_score=relevance_score,
-                score_breakdown=score_breakdown
+                score_breakdown=score_breakdown,
             )
             filtered_items.append(filtered_item)
 

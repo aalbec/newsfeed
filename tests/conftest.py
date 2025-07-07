@@ -19,7 +19,7 @@ def cached_semantic_model():
     This fixture loads the sentence transformer model once and reuses it
     across all tests, significantly speeding up integration tests.
     """
-    model_name = 'all-MiniLM-L6-v2'
+    model_name = "all-MiniLM-L6-v2"
 
     if model_name not in _model_cache:
         print(f"\n🔄 Loading semantic model '{model_name}' for integration tests...")
@@ -47,14 +47,12 @@ def cached_rss_data():
         async def fetch_rss_data():
             # Fetch from both RSS sources
             toms_hardware = RSSSource(
-                "tomshardware",
-                "https://www.tomshardware.com/feeds/all",
-                max_items=5
+                "tomshardware", "https://www.tomshardware.com/feeds/all", max_items=5
             )
             ars_technica = RSSSource(
                 "arstechnica",
                 "https://feeds.arstechnica.com/arstechnica/index",
-                max_items=5
+                max_items=5,
             )
 
             # Get items from both sources

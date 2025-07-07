@@ -17,6 +17,7 @@ API_BASE_URL = "http://localhost:8000"
 RETRIEVE_ENDPOINT = f"{API_BASE_URL}/api/v1/retrieve"
 HEALTH_ENDPOINT = f"{API_BASE_URL}/health"
 
+
 def check_api_health() -> tuple[bool, dict]:
     """Check if the API is running and healthy, and return its health data."""
     try:
@@ -43,10 +44,11 @@ def fetch_news_items() -> List[Dict[str, Any]]:
         st.error(f"Connection Error: {e}")
         return []
 
+
 def format_timestamp(timestamp_str: str) -> str:
     """Format timestamp for display."""
     try:
-        dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+        dt = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
         return dt.strftime("%Y-%m-%d %H:%M UTC")
     except Exception:
         return timestamp_str
@@ -68,8 +70,8 @@ def display_news_item(item: Dict[str, Any]):
         with col1:
             st.markdown(f"### {item.get('title', 'No Title')}")
         with col2:
-            if 'relevance_score' in item:
-                score = item['relevance_score']
+            if "relevance_score" in item:
+                score = item["relevance_score"]
                 color = "🔴" if score > 0.7 else "🟡" if score > 0.4 else "🟢"
                 st.markdown(f"{color} **{score:.2f}**")
 
@@ -78,16 +80,18 @@ def display_news_item(item: Dict[str, Any]):
         with col1:
             st.markdown(f"**Source:** {item.get('source', 'Unknown')}")
         with col2:
-            st.markdown(f"**Published:** {format_timestamp(item.get('published_at', ''))}")
+            st.markdown(
+                f"**Published:** {format_timestamp(item.get('published_at', ''))}"
+            )
 
         # Body content
-        if item.get('body'):
+        if item.get("body"):
             st.markdown(f"**Summary:** {item.get('body', '')}")
 
         # Relevance breakdown (if available)
-        if 'score_breakdown' in item:
+        if "score_breakdown" in item:
             with st.expander("See relevance breakdown"):
-                breakdown = item['score_breakdown']
+                breakdown = item["score_breakdown"]
                 st.markdown("**Relevance Breakdown:**")
                 if isinstance(breakdown, dict):
                     for factor, score in breakdown.items():
@@ -95,12 +99,11 @@ def display_news_item(item: Dict[str, Any]):
                 else:
                     st.markdown(str(breakdown))
 
+
 def main():
     """Main dashboard function."""
     st.set_page_config(
-        page_title="IT Newsfeed Dashboard",
-        page_icon="📰",
-        layout="wide"
+        page_title="IT Newsfeed Dashboard", page_icon="📰", layout="wide"
     )
 
     st.title("📰 IT Newsfeed Dashboard")
@@ -128,14 +131,16 @@ def main():
 
         # Instructions
         st.header("Instructions")
-        st.markdown("""
+        st.markdown(
+            """
         This dashboard shows IT news items filtered for relevance to IT managers.
 
         **Relevance Score:**
         - 🔴 High (>0.7): Critical IT issues
         - 🟡 Medium (0.4-0.7): Important updates
         - 🟢 Low (<0.4): General tech news
-        """)
+        """
+        )
 
         # Display sources dynamically
         if is_healthy and health_data:
@@ -182,14 +187,13 @@ def main():
 
     # Footer
     st.markdown("---")
-    st.markdown(
-        f"*Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*"
-    )
+    st.markdown(f"*Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
 
     # Auto-refresh logic
     if auto_refresh:
         time.sleep(30)
         st.rerun()
+
 
 if __name__ == "__main__":
     main()

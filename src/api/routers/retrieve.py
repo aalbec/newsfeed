@@ -30,7 +30,9 @@ def get_filter_registry(request: Request) -> FilterRegistry:
     return request.app.state.filter_registry
 
 
-async def retrieve_and_filter_items(storage: NewsStore, filter_registry: FilterRegistry) -> List[NewsItem]:
+async def retrieve_and_filter_items(
+    storage: NewsStore, filter_registry: FilterRegistry
+) -> List[NewsItem]:
     """Retrieve all items from storage and apply filters for ranking."""
     try:
         # Get all items from storage
@@ -44,12 +46,16 @@ async def retrieve_and_filter_items(storage: NewsStore, filter_registry: FilterR
         # Apply filters if available
         filter_names = filter_registry.list_filters()
         if not filter_names:
-            logger.warning("⚠️ No filters available - returning all items without ranking")
+            logger.warning(
+                "⚠️ No filters available - returning all items without ranking"
+            )
             # Sort by published_at (newest first) as fallback
             sorted_items = sorted(all_items, key=lambda x: x.published_at, reverse=True)
             return sorted_items
 
-        logger.info(f"🔍 Applying {len(filter_names)} filters to {len(all_items)} items")
+        logger.info(
+            f"🔍 Applying {len(filter_names)} filters to {len(all_items)} items"
+        )
 
         # Apply each filter and collect scores
         for item in all_items:
@@ -69,16 +75,22 @@ async def retrieve_and_filter_items(storage: NewsStore, filter_registry: FilterR
                             if breakdown:
                                 reasons.append(f"{filter_name}: {breakdown}")
                     except Exception as e:
-                        logger.error(f"Filter {filter_name} failed for item {item.id}: {e}")
+                        logger.error(
+                            f"Filter {filter_name} failed for item {item.id}: {e}"
+                        )
 
             # Take the highest score from all filters (highest signal wins)
             item.relevance_score = max(scores) if scores else 0.0
-            item.score_breakdown = "; ".join(reasons) if reasons else "No specific reason"
+            item.score_breakdown = (
+                "; ".join(reasons) if reasons else "No specific reason"
+            )
 
         # Filter by relevance threshold and sort by score (highest first)
         relevant_items = [
-            item for item in all_items
-            if hasattr(item, 'relevance_score') and item.relevance_score is not None
+            item
+            for item in all_items
+            if hasattr(item, "relevance_score")
+            and item.relevance_score is not None
             and item.relevance_score >= RELEVANCE_THRESHOLD
         ]
 
@@ -86,15 +98,19 @@ async def retrieve_and_filter_items(storage: NewsStore, filter_registry: FilterR
         sorted_items = sorted(
             relevant_items,
             key=lambda x: (x.relevance_score, x.published_at),
-            reverse=True
+            reverse=True,
         )
 
-        logger.info(f"✅ Filtered {len(all_items)} items to {len(sorted_items)} relevant items")
+        logger.info(
+            f"✅ Filtered {len(all_items)} items to {len(sorted_items)} relevant items"
+        )
         return sorted_items
 
     except Exception as e:
         logger.error(f"Error retrieving and filtering items: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve items: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve items: {str(e)}"
+        )
 
 
 router = APIRouter()
@@ -109,17 +125,17 @@ router = APIRouter()
         200: {"description": "News items retrieved and filtered successfully"},
         400: {
             "model": BadRequestErrorResponse,
-            "description": "Bad request - invalid parameters"
+            "description": "Bad request - invalid parameters",
         },
         422: {
             "model": ValidationErrorResponse,
-            "description": "Validation error - invalid request format"
+            "description": "Validation error - invalid request format",
         },
         500: {
             "model": InternalServerErrorResponse,
-            "description": "Internal server error during retrieval"
-        }
-    }
+            "description": "Internal server error during retrieval",
+        },
+    },
 )
 async def retrieve_news(
     storage: NewsStore = Depends(get_storage),
@@ -161,15 +177,15 @@ async def retrieve_news(
         filtering_info = {
             "total_items_in_storage": total_items_in_storage,
             "items_passing_filters": len(items),
-            "relevance_threshold": RELEVANCE_THRESHOLD
+            "relevance_threshold": RELEVANCE_THRESHOLD,
         }
 
-        logger.info(f"📊 Retrieved {len(items)} items (from {total_items_in_storage} total)")
+        logger.info(
+            f"📊 Retrieved {len(items)} items (from {total_items_in_storage} total)"
+        )
 
         return RetrieveResponse(
-            items=items,
-            total=len(items),
-            filtering_info=filtering_info
+            items=items, total=len(items), filtering_info=filtering_info
         )
 
     except HTTPException:
@@ -178,6 +194,5 @@ async def retrieve_news(
     except Exception as e:
         logger.error(f"Unexpected error in retrieve endpoint: {e}")
         raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error during retrieval: {str(e)}"
+            status_code=500, detail=f"Internal server error during retrieval: {str(e)}"
         )

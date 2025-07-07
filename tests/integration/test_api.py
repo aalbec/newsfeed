@@ -8,11 +8,7 @@ def test_root_endpoint(client: TestClient):
     response = client.get("/")
     assert response.status_code == 200
     data = response.json()
-    expected = {
-        "message": "IT Newsfeed API",
-        "docs": "/docs",
-        "health": "/health"
-    }
+    expected = {"message": "IT Newsfeed API", "docs": "/docs", "health": "/health"}
     # Check that all expected fields/values are present in the response
     assert expected.items() <= data.items()
     # Optionally check for required keys

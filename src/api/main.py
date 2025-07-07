@@ -64,7 +64,7 @@ async def lifespan(app: FastAPI):
         app.state.background_ingestion = BackgroundIngestionService(
             storage=app.state.storage,
             source_registry=app.state.source_registry,
-            filter_registry=app.state.filter_registry
+            filter_registry=app.state.filter_registry,
         )
 
         # Register default sources for continuous ingestion
@@ -91,7 +91,7 @@ async def lifespan(app: FastAPI):
     # Shutdown background ingestion service
     if not is_test_mode:
         try:
-            if hasattr(app.state, 'background_ingestion'):
+            if hasattr(app.state, "background_ingestion"):
                 await app.state.background_ingestion.stop()
                 logger.info("✅ Background ingestion service stopped")
         except Exception as e:
@@ -119,17 +119,16 @@ async def _register_default_sources(source_registry: SourceRegistry) -> None:
     try:
         from src.sources.mock_source import MockNewsSource
         from src.sources.rss_source import RSSSource
+
         rss_sources = [
             RSSSource(
-                "tomshardware",
-                "https://www.tomshardware.com/feeds/all",
-                max_items=10
+                "tomshardware", "https://www.tomshardware.com/feeds/all", max_items=10
             ),
             RSSSource(
                 "arstechnica",
                 "https://feeds.arstechnica.com/arstechnica/index",
-                max_items=10
-            )
+                max_items=10,
+            ),
         ]
         for source in rss_sources:
             source_registry.register(source)
@@ -141,15 +140,12 @@ async def _register_default_sources(source_registry: SourceRegistry) -> None:
         # Register Reddit source if credentials are available
         try:
             from src.sources.reddit_source import create_reddit_source
-            reddit_source = create_reddit_source(
-                subreddit_name="sysadmin",
-                limit=10
-            )
+
+            reddit_source = create_reddit_source(subreddit_name="sysadmin", limit=10)
             if reddit_source:
                 source_registry.register(reddit_source)
                 logger.info(
-                    "📱 Registered Reddit source: "
-                    f"{reddit_source.get_source_name()}"
+                    "📱 Registered Reddit source: " f"{reddit_source.get_source_name()}"
                 )
             else:
                 logger.info(
@@ -162,9 +158,7 @@ async def _register_default_sources(source_registry: SourceRegistry) -> None:
                 "Reddit source"
             )
         total_sources = source_registry.count()
-        logger.info(
-            f"📊 Total sources registered: {total_sources}"
-        )
+        logger.info(f"📊 Total sources registered: {total_sources}")
     except Exception as e:
         logger.error(f"❌ Error registering default sources: {e}")
         # Continue startup even if source registration fails
@@ -217,7 +211,7 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
-    openapi_url="/openapi.json"
+    openapi_url="/openapi.json",
 )
 
 # Add CORS middleware for frontend integration
@@ -241,10 +235,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
                 error="Bad Request",
                 status_code=400,
                 path=request.url.path,
-                details=[
-                    {"type": "bad_request", "msg": exc.detail}
-                ]
-            ).model_dump()
+                details=[{"type": "bad_request", "msg": exc.detail}],
+            ).model_dump(),
         )
     elif exc.status_code == 500:
         return JSONResponse(
@@ -255,8 +247,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
                 path=request.url.path,
                 details=[
                     {"type": "internal_error", "msg": "An unexpected error occurred"}
-                ]
-            ).model_dump()
+                ],
+            ).model_dump(),
         )
     else:
         return JSONResponse(
@@ -265,10 +257,10 @@ async def http_exception_handler(request: Request, exc: HTTPException):
                 "error": "HTTP Error",
                 "status_code": exc.status_code,
                 "path": request.url.path,
-                "details": [
-                    {"type": "http_error", "msg": exc.detail}
-                ] if exc.detail else None
-            }
+                "details": (
+                    [{"type": "http_error", "msg": exc.detail}] if exc.detail else None
+                ),
+            },
         )
 
 
@@ -282,8 +274,8 @@ async def general_exception_handler(request: Request, exc: Exception):
             error="Internal Server Error",
             status_code=500,
             path=request.url.path,
-            details=[{"type": "internal_error", "msg": "An unexpected error occurred"}]
-        ).model_dump()
+            details=[{"type": "internal_error", "msg": "An unexpected error occurred"}],
+        ).model_dump(),
     )
 
 
@@ -310,13 +302,18 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-@app.get("/", response_model=RootResponse, tags=["Root"], responses={
-    200: {"description": "API information retrieved successfully"},
-    500: {
-        "model": InternalServerErrorResponse,
-        "description": "Internal server error"
-    }
-})
+@app.get(
+    "/",
+    response_model=RootResponse,
+    tags=["Root"],
+    responses={
+        200: {"description": "API information retrieved successfully"},
+        500: {
+            "model": InternalServerErrorResponse,
+            "description": "Internal server error",
+        },
+    },
+)
 async def read_root() -> RootResponse:
     """Root endpoint with comprehensive API information.
 
@@ -345,13 +342,18 @@ async def read_root() -> RootResponse:
     )
 
 
-@app.get("/health", response_model=HealthResponse, tags=["Health"], responses={
-    200: {"description": "Health status retrieved successfully"},
-    500: {
-        "model": InternalServerErrorResponse,
-        "description": "Internal server error"
-    }
-})
+@app.get(
+    "/health",
+    response_model=HealthResponse,
+    tags=["Health"],
+    responses={
+        200: {"description": "Health status retrieved successfully"},
+        500: {
+            "model": InternalServerErrorResponse,
+            "description": "Internal server error",
+        },
+    },
+)
 async def health_check() -> HealthResponse:
     """Comprehensive health check with detailed dependency status.
 
@@ -375,9 +377,7 @@ async def health_check() -> HealthResponse:
             await app.state.storage.get_all()
         except Exception as e:
             logger.error(f"Storage health check failed: {e}")
-            storage_health = {
-                "status": "unhealthy", "reason": str(e), "registered": []
-            }
+            storage_health = {"status": "unhealthy", "reason": str(e), "registered": []}
 
         # Check filter registry health
         filter_health = {"status": "healthy", "registered": []}
@@ -391,9 +391,7 @@ async def health_check() -> HealthResponse:
                 )
         except Exception as e:
             logger.error(f"Filter registry health check failed: {e}")
-            filter_health = {
-                "status": "unhealthy", "reason": str(e), "registered": []
-            }
+            filter_health = {"status": "unhealthy", "reason": str(e), "registered": []}
 
         # Check source registry health
         source_health = {"status": "healthy", "registered": []}
@@ -407,9 +405,7 @@ async def health_check() -> HealthResponse:
                 )
         except Exception as e:
             logger.error(f"Source registry health check failed: {e}")
-            source_health = {
-                "status": "unhealthy", "reason": str(e), "registered": []
-            }
+            source_health = {"status": "unhealthy", "reason": str(e), "registered": []}
 
         all_deps = [storage_health, filter_health, source_health]
         is_healthy = all(d["status"] == "healthy" for d in all_deps)
@@ -448,4 +444,5 @@ app.include_router(retrieve.router, prefix="/api/v1")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

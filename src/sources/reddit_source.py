@@ -43,14 +43,14 @@ class RedditSource(NewsSource):
 
             if not client_id or not client_secret:
                 logger.warning("Reddit credentials not found in environment variables")
-                logger.info("Set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET to enable Reddit source")
+                logger.info(
+                    "Set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET to enable Reddit source"
+                )
                 return None
 
             # Initialize Reddit client
             reddit = praw.Reddit(
-                client_id=client_id,
-                client_secret=client_secret,
-                user_agent=user_agent
+                client_id=client_id, client_secret=client_secret, user_agent=user_agent
             )
 
             # Test connection
@@ -65,15 +65,11 @@ class RedditSource(NewsSource):
     async def fetch_items(self) -> List[NewsItem]:
         """Fetch posts from the subreddit and convert to NewsItem format."""
         if not self.reddit or not self.subreddit:
-            logger.warning(
-                "Reddit client not available, skipping Reddit fetch"
-            )
+            logger.warning("Reddit client not available, skipping Reddit fetch")
             return []
 
         try:
-            logger.info(
-                f"Fetching {self.limit} posts from r/{self.subreddit_name}"
-            )
+            logger.info(f"Fetching {self.limit} posts from r/{self.subreddit_name}")
 
             items = []
             # Fetch hot posts from the subreddit
@@ -85,9 +81,7 @@ class RedditSource(NewsSource):
                         items.append(news_item)
 
                 except Exception as e:
-                    logger.error(
-                        f"Error processing Reddit post {post.id}: {e}"
-                    )
+                    logger.error(f"Error processing Reddit post {post.id}: {e}")
                     continue
 
             logger.info(
@@ -104,22 +98,17 @@ class RedditSource(NewsSource):
         """Convert a Reddit post to NewsItem format."""
         try:
             # Create unique ID
-            item_id = (
-                f"reddit_{self.subreddit_name}_"
-                f"{post.id}"
-            )
+            item_id = f"reddit_{self.subreddit_name}_" f"{post.id}"
 
             # Get post content
             title = post.title
             # Ensure body is always a string
-            body = getattr(post, 'selftext', None)
+            body = getattr(post, "selftext", None)
             if body is None:
                 body = ""
 
             # Convert timestamp to datetime
-            created_utc = datetime.fromtimestamp(
-                post.created_utc, tz=timezone.utc
-            )
+            created_utc = datetime.fromtimestamp(post.created_utc, tz=timezone.utc)
 
             # Create NewsItem
             news_item = NewsItem(
@@ -136,9 +125,7 @@ class RedditSource(NewsSource):
             return news_item
 
         except Exception as e:
-            logger.error(
-                f"Error converting Reddit post to NewsItem: {e}"
-            )
+            logger.error(f"Error converting Reddit post to NewsItem: {e}")
             return None
 
     @property
@@ -151,7 +138,9 @@ class RedditSource(NewsSource):
         return self.source_name
 
 
-def create_reddit_source(subreddit_name: str = "sysadmin", limit: int = 10) -> Optional[RedditSource]:
+def create_reddit_source(
+    subreddit_name: str = "sysadmin", limit: int = 10
+) -> Optional[RedditSource]:
     """Factory function to create a Reddit source with error handling."""
     try:
         source = RedditSource(subreddit_name=subreddit_name, limit=limit)
