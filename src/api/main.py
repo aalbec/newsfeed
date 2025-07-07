@@ -1,5 +1,6 @@
 """FastAPI application entry point for the IT Newsfeed API."""
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
@@ -43,35 +44,43 @@ async def lifespan(app: FastAPI):
     """
     logger.info("🚀 Starting IT Newsfeed API...")
 
+    # Check for test mode
+    is_test_mode = os.getenv("TESTING", "false").lower() == "true"
+    if is_test_mode:
+        logger.warning(
+            "🧪 Running in TEST MODE. "
+            "Skipping background services and model loading."
+        )
+
     # Initialize core components
     app.state.storage = InMemoryStore()
     app.state.source_registry = SourceRegistry()
     app.state.filter_registry = FilterRegistry()
 
-    # Initialize background ingestion service
-    # This implements the "continuously fetch IT-related news"
-    app.state.background_ingestion = BackgroundIngestionService(
-        storage=app.state.storage,
-        source_registry=app.state.source_registry,
-        filter_registry=app.state.filter_registry
-    )
+    # Skip background services and default data loading in test mode
+    if not is_test_mode:
+        # Initialize background ingestion service
+        # This implements the "continuously fetch IT-related news"
+        app.state.background_ingestion = BackgroundIngestionService(
+            storage=app.state.storage,
+            source_registry=app.state.source_registry,
+            filter_registry=app.state.filter_registry
+        )
 
-    # Register default sources for continuous ingestion
-    # These sources will be automatically fetched in the background
-    await _register_default_sources(app.state.source_registry)
+        # Register default sources for continuous ingestion
+        await _register_default_sources(app.state.source_registry)
 
-    # Register default filters for content filtering
-    # These filters will be applied to all ingested items
-    await _register_default_filters(app.state.filter_registry)
+        # Register default filters for content filtering
+        await _register_default_filters(app.state.filter_registry)
 
-    # Start background ingestion service
-    try:
-        await app.state.background_ingestion.start()
-        logger.info("✅ Background ingestion service started")
-    except Exception as e:
-        logger.error(f"❌ Failed to start background ingestion: {e}")
-        # Continue startup even if background ingestion fails
-        # This ensures the API remains functional for manual ingestion
+        # Start background ingestion service
+        try:
+            await app.state.background_ingestion.start()
+            logger.info("✅ Background ingestion service started")
+        except Exception as e:
+            logger.error(f"❌ Failed to start background ingestion: {e}")
+    else:
+        logger.info("✅ Core components initialized for testing")
 
     logger.info("✅ Core components initialized")
     logger.info("🔍 API docs available at http://localhost:8000/docs")
@@ -80,12 +89,13 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown background ingestion service
-    try:
-        if hasattr(app.state, 'background_ingestion'):
-            await app.state.background_ingestion.stop()
-            logger.info("✅ Background ingestion service stopped")
-    except Exception as e:
-        logger.error(f"❌ Error stopping background ingestion: {e}")
+    if not is_test_mode:
+        try:
+            if hasattr(app.state, 'background_ingestion'):
+                await app.state.background_ingestion.stop()
+                logger.info("✅ Background ingestion service stopped")
+        except Exception as e:
+            logger.error(f"❌ Error stopping background ingestion: {e}")
 
     logger.info("🛑 IT Newsfeed API shutting down...")
 
@@ -131,15 +141,26 @@ async def _register_default_sources(source_registry: SourceRegistry) -> None:
         # Register Reddit source if credentials are available
         try:
             from src.sources.reddit_source import create_reddit_source
-            reddit_source = create_reddit_source(subreddit_name="sysadmin", limit=10)
+            reddit_source = create_reddit_source(
+                subreddit_name="sysadmin",
+                limit=10
+            )
             if reddit_source:
                 source_registry.register(reddit_source)
-                logger.info(f"📱 Registered Reddit source: {reddit_source.get_source_name()}")
+                logger.info(
+                    "📱 Registered Reddit source: "
+                    f"{reddit_source.get_source_name()}"
+                )
             else:
-                logger.info("📱 Reddit source not registered - credentials not available")
+                logger.info(
+                    "📱 Reddit source not registered - credentials not available"
+                )
         except Exception as e:
             logger.warning(f"📱 Reddit source registration failed: {e}")
-            logger.info("Set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET to enable Reddit source")
+            logger.info(
+                "Set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET to enable "
+                "Reddit source"
+            )
         total_sources = source_registry.count()
         logger.info(
             f"📊 Total sources registered: {total_sources}"
@@ -268,8 +289,8 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Custom validation error handler with structured error responses."""
-    logger.error(f"Validation error: {exc.errors()} for {request.url}")
+    """Global handler for Pydantic validation errors with structured logging."""
+    logger.error(f"Validation error for {request.url}: {exc.errors()}")
     return JSONResponse(
         status_code=422,
         content=ValidationErrorResponse(
@@ -278,20 +299,23 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             path=request.url.path,
             details=[
                 {
-                    "type": error["type"],
-                    "loc": error["loc"],
-                    "msg": error["msg"],
-                    "input": error.get("input", "")
+                    "type": err["type"],
+                    "loc": err["loc"],
+                    "msg": err["msg"],
+                    "input": err.get("input", ""),
                 }
-                for error in exc.errors()
-            ]
-        ).model_dump()
+                for err in exc.errors()
+            ],
+        ).model_dump(),
     )
 
 
 @app.get("/", response_model=RootResponse, tags=["Root"], responses={
     200: {"description": "API information retrieved successfully"},
-    500: {"model": InternalServerErrorResponse, "description": "Internal server error"}
+    500: {
+        "model": InternalServerErrorResponse,
+        "description": "Internal server error"
+    }
 })
 async def read_root() -> RootResponse:
     """Root endpoint with comprehensive API information.
@@ -309,32 +333,32 @@ async def read_root() -> RootResponse:
     endpoints = {
         "ingest": "/api/v1/ingest",
         "retrieve": "/api/v1/retrieve",
-        "health": "/health"
+        "health": "/health",
     }
-
-
-
     return RootResponse(
         message="IT Newsfeed API",
         description="Real-time IT newsfeed system with AI-powered semantic filtering",
-        version="0.1.0",
+        version=app.version,
         docs="/docs",
         health="/health",
-        endpoints=endpoints
+        endpoints=endpoints,
     )
 
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"], responses={
     200: {"description": "Health status retrieved successfully"},
-    500: {"model": InternalServerErrorResponse, "description": "Internal server error"}
+    500: {
+        "model": InternalServerErrorResponse,
+        "description": "Internal server error"
+    }
 })
 async def health_check() -> HealthResponse:
-    """Comprehensive health check endpoint with detailed dependency status and explanations.
+    """Comprehensive health check with detailed dependency status.
 
     Monitors the health of all system components and provides actionable insights:
-    - Storage system status (in-memory database)
-    - Filter registry status (AI/ML filtering components)
-    - Source registry status (data source components)
+    - Storage system (in-memory database)
+    - Filter registry (AI/ML filtering components)
+    - Source registry (data source components)
 
     Returns detailed explanations for any warnings or errors, including:
     - Specific reasons for degraded status
@@ -350,17 +374,12 @@ async def health_check() -> HealthResponse:
         try:
             await app.state.storage.get_all()
         except Exception as e:
-            logger.error(
-                f"Storage health check failed: {e}"
-            )
+            logger.error(f"Storage health check failed: {e}")
             storage_health = {
-                "status": "unhealthy",
-                "reason": str(e),
-                "registered": []
+                "status": "unhealthy", "reason": str(e), "registered": []
             }
 
         # Check filter registry health
-        filters = []
         filter_health = {"status": "healthy", "registered": []}
         try:
             filters = app.state.filter_registry.list_filters()
@@ -368,21 +387,15 @@ async def health_check() -> HealthResponse:
             if not filters:
                 filter_health["status"] = "warning"
                 filter_health["reason"] = (
-                    "No real filters registered. Register at least one filter "
-                    "for full health."
+                    "No filters registered. Register one for full health."
                 )
         except Exception as e:
-            logger.error(
-                f"Filter registry health check failed: {e}"
-            )
+            logger.error(f"Filter registry health check failed: {e}")
             filter_health = {
-                "status": "unhealthy",
-                "reason": str(e),
-                "registered": []
+                "status": "unhealthy", "reason": str(e), "registered": []
             }
 
         # Check source registry health
-        sources = []
         source_health = {"status": "healthy", "registered": []}
         try:
             sources = app.state.source_registry.list_sources()
@@ -390,27 +403,18 @@ async def health_check() -> HealthResponse:
             if not sources:
                 source_health["status"] = "warning"
                 source_health["reason"] = (
-                    "No real sources registered. Register at least one source "
-                    "for full health."
+                    "No sources registered. Register one for full health."
                 )
         except Exception as e:
-            logger.error(
-                f"Source registry health check failed: {e}"
-            )
+            logger.error(f"Source registry health check failed: {e}")
             source_health = {
-                "status": "unhealthy",
-                "reason": str(e),
-                "registered": []
+                "status": "unhealthy", "reason": str(e), "registered": []
             }
 
-        overall_status = (
-            "healthy"
-            if all(
-                dep["status"] == "healthy"
-                for dep in [storage_health, filter_health, source_health]
-            )
-            else "degraded"
-        )
+        all_deps = [storage_health, filter_health, source_health]
+        is_healthy = all(d["status"] == "healthy" for d in all_deps)
+        overall_status = "healthy" if is_healthy else "degraded"
+
         return HealthResponse(
             status=overall_status,
             dependencies={
@@ -420,17 +424,13 @@ async def health_check() -> HealthResponse:
             },
             status_explanations={
                 "healthy": "All components are fully operational",
-                "degraded": (
-                    "Some components have warnings but the system is functional"
-                ),
-                "unhealthy": "Critical components are not working"
-            }
+                "degraded": "Some components have warnings but system is functional",
+                "unhealthy": "Critical components are not working",
+            },
         )
 
     except Exception as e:
-        logger.error(
-            f"Health check failed: {e}"
-        )
+        logger.error(f"Health check failed: {e}")
         return HealthResponse(
             status="unhealthy",
             dependencies={
@@ -441,9 +441,9 @@ async def health_check() -> HealthResponse:
         )
 
 
-# Include routers
-app.include_router(ingest.router, prefix="/api/v1", tags=["Ingest"])
-app.include_router(retrieve.router, prefix="/api/v1", tags=["Retrieve"])
+# Include API routers
+app.include_router(ingest.router, prefix="/api/v1")
+app.include_router(retrieve.router, prefix="/api/v1")
 
 
 if __name__ == "__main__":
