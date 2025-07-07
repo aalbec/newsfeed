@@ -127,9 +127,19 @@ async def _register_default_sources(source_registry: SourceRegistry) -> None:
         mock_source = MockNewsSource("mock_fallback", item_count=5)
         source_registry.register(mock_source)
         logger.info(f"🎭 Registered mock source: {mock_source.name}")
-        # Note: Reddit source registration is deferred until Reddit API credentials
-        # are properly configured. This prevents startup failures when credentials
-        # are not available.
+
+        # Register Reddit source if credentials are available
+        try:
+            from src.sources.reddit_source import create_reddit_source
+            reddit_source = create_reddit_source(subreddit_name="sysadmin", limit=10)
+            if reddit_source:
+                source_registry.register(reddit_source)
+                logger.info(f"📱 Registered Reddit source: {reddit_source.get_source_name()}")
+            else:
+                logger.info("📱 Reddit source not registered - credentials not available")
+        except Exception as e:
+            logger.warning(f"📱 Reddit source registration failed: {e}")
+            logger.info("Set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET to enable Reddit source")
         total_sources = source_registry.count()
         logger.info(
             f"📊 Total sources registered: {total_sources}"
