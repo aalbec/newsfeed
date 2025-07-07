@@ -21,6 +21,8 @@ class NewsItem(BaseModel):
     Additional fields for internal use:
     - version: int, event versioning for updates/corrections (not part of
       API contract)
+    - relevance_score: float, AI-calculated relevance score for ranking
+    - score_breakdown: str, explanation of relevance scoring
     """
 
     model_config = ConfigDict(
@@ -35,6 +37,11 @@ class NewsItem(BaseModel):
                 ),
                 "published_at": "2024-12-10T15:30:00Z",
                 "version": 1,
+                "relevance_score": 0.85,
+                "score_breakdown": (
+                    "keyword: high_priority_keywords=0.8; "
+                    "semantic: topic_cybersecurity_incident=0.9"
+                )
             }
         }
     )
@@ -45,6 +52,12 @@ class NewsItem(BaseModel):
     body: Optional[str] = Field(None, description="News content (optional)")
     published_at: datetime = Field(..., description="Publication timestamp UTC")
     version: int = Field(default=1, description="Event version for updates/corrections")
+    relevance_score: Optional[float] = Field(
+        None, description="AI-calculated relevance score for ranking"
+    )
+    score_breakdown: Optional[str] = Field(
+        None, description="Explanation of relevance scoring"
+    )
 
     @field_serializer("published_at")
     def serialize_published_at(self, value: datetime) -> str:
